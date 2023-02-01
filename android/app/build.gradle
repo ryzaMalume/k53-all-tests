@@ -53,8 +53,8 @@ android {
         applicationId "com.k53_all_testss"
         minSdkVersion 19
         targetSdkVersion 31
-        versionCode 4
-        versionName "4.0.0+1"
+        versionCode 8
+        versionName "8.0.0+1"
     }
 
     signingConfigs {
@@ -66,6 +66,7 @@ android {
         }
     }
     buildTypes {
+
         release {
             signingConfig signingConfigs.release
         }

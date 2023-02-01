@@ -1,11 +1,23 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:k53_all_tests/constants.dart';
-import 'package:k53_all_tests/screens/quiz/quiz_screen.dart';
+import 'package:k53_all_tests/gradient_text.dart';
+import 'package:k53_all_tests/screens/more/testquiz.dart';
+//import 'package:k53_all_tests/screens/quiz/quiz_screen.dart';
 import 'package:k53_all_tests/screens/welcome/practicetest.dart';
-import 'package:k53_all_tests/screens/welcome/realtest.dart';
+import 'package:provider/provider.dart';
+import 'package:share_plus/share_plus.dart';
+
+import '../../LearnHome.dart';
+import '../../learn.dart';
+import '../../providers/darkmode_provider.dart';
+import '../../testing/testing2.dart';
+import '../more/go.dart';
+import '../more/quiz1.dart';
 
 
 class WelcomeScreen extends StatefulWidget {
@@ -16,6 +28,27 @@ class WelcomeScreen extends StatefulWidget {
 }
 
 class _WelcomeScreenState extends State<WelcomeScreen> {
+  _WelcomeScreenState(){
+    _initAd();
+  }
+  //start
+  late InterstitialAd _interstitialAd;
+  bool _isAdLoaded = false;
+  void _initAd(){
+    InterstitialAd.load(
+        adUnitId: 'ca-app-pub-3875532731600828/4327492088',
+        request: AdRequest(),
+        adLoadCallback: InterstitialAdLoadCallback(
+            onAdLoaded: onAdLoaded,
+            onAdFailedToLoad: (error){},
+        ),
+    );
+  }
+  void onAdLoaded(InterstitialAd ad) {
+    _interstitialAd = ad;
+    _isAdLoaded = true;
+  }
+  //end
   bool isClicked = false;
   int count =1;
   void darkMode(){
@@ -31,138 +64,247 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
      }
    });
   }
+  String photon = '';
+  Color? nightCol;
 
   @override
   Widget build(BuildContext context) {
+    nightCol = Colors.blueGrey[900];
+    // Obtain the provider
+    final darkMode = Provider.of<DarkThemeProvider>(context);
+
+    // getting the value from the provider instance
+    final isDark = darkMode.isDark;
+    if(isDark == true){
+      photon = 'Dark';
+    }else{
+      photon = 'Light';
+    }
     return MaterialApp(
-      //theme: isClicked ?  ThemeData.dark() :ThemeData.light() ,
-      home: Scaffold(
-        backgroundColor: isClicked ? Colors.blueGrey : Colors.white ,
-        appBar: AppBar(
-          backgroundColor: isClicked ? Colors.blueGrey : Colors.white ,
-          title:  Text(''),
-          actions: [
-            Row(
-              children: [
-                Container(
-                  width: 90,
-                  height: 35,
-                  child: RaisedButton(
-                    color: isClicked ? Colors.blueGrey : Colors.white ,
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30)),
-                    child: Row(
-                      mainAxisAlignment: isClicked ? MainAxisAlignment.start : MainAxisAlignment.end,
-                      children: [
-                        Icon(
-                          isClicked ? Icons.nightlight_round : Icons.light_mode,
-                          color: isClicked ? Colors.white : Colors.deepOrange,
-                        )
-                      ],
-                    ),
-                    onPressed: (){
-                      setState(() {
-                        darkMode();
-                      });
-                    },
-                  ),
-                ),
-              ],
+      home: WillPopScope(
+        onWillPop: () async => false,
+        child: Scaffold(
+          backgroundColor: isDark ? nightCol : Colors.white ,//deepPurple[900], Theme.of(context).primaryColor
+          appBar: AppBar(
+            backgroundColor: isDark ? nightCol : Colors.white ,
+            title:  GradientText(
+              "$photon mode",
+              style: const TextStyle(fontSize: 20,fontWeight: FontWeight.bold),
+              gradient: isDark ? LinearGradient(colors: [
+                Colors.cyanAccent,
+                Colors.yellowAccent,
+                Colors.deepOrange,
+
+              ])
+                  :LinearGradient(colors: [
+                Colors.deepOrange,
+                Colors.orange,
+                Colors.teal,
+              ]) ,
             ),
-          ],
-        ),
-        body: Stack(
-          children: [
-            //SvgPicture.asset("assets/icons/bg.svg", fit: BoxFit.fill),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: kDefaultPadding),
-              child: Column(
-                //crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
+            centerTitle: true,
+            actions: [
+              Row(
                 children: [
-                  Spacer(flex: 2), //2/6
-                  /*IconButton(
-                    color: isClicked ? Colors.deepOrange : Colors.black54 ,
-                    icon: isClicked ? Icon(Icons.light_mode): Icon(Icons.nightlight_round),
-                    onPressed: (){
-                      setState(() {
-                        darkMode();
-                      });
-                    },
-                  ),*/
-                  SizedBox(height: 5,),
-                  /*Container(
+                  Container(
                     width: 90,
-                    child: RaisedButton(
-                      color: isClicked ? Colors.black12 : Colors.white ,
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30)),
+                    height: 35,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: isDark ? nightCol : Colors.white ,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                          side: BorderSide(color: isDark ? Colors.tealAccent : Colors.teal,),
+                        ),
+                      ),
                       child: Row(
-                        mainAxisAlignment: isClicked ? MainAxisAlignment.start : MainAxisAlignment.end,
+                        mainAxisAlignment: isDark ? MainAxisAlignment.start : MainAxisAlignment.end,
                         children: [
                           Icon(
-                            isClicked ? Icons.nightlight_round : Icons.light_mode,
-                            color: isClicked ? Colors.white : Colors.deepOrange,
+                            isDark ? Icons.nightlight_round : Icons.light_mode,
+                            color: isDark ? Colors.white : Colors.orange,
                           )
                         ],
                       ),
                       onPressed: (){
                         setState(() {
-                          darkMode();
+                          //darkMode();
+                          darkMode.goDark();
                         });
                       },
                     ),
-                  ),*/
-                  Text(
-                    "K53 Test",
-                    style: TextStyle(fontSize: 40,fontWeight: FontWeight.bold,color: Colors.deepOrange,fontStyle: FontStyle.italic, ),/*Theme.of(context).textTheme.headline4?.copyWith(
-                        color: Colors.deepOrange,),//isClicked ? Colors.white : Colors.deepOrange, fontWeight: FontWeight.bold),*/
                   ),
-                  Spacer(), // 1/6
-                  InkWell(
-                    onTap: () => Get.to(() => PracticeTest(isClicked: isClicked,),),//Get.to(PracticeTest(isClicked: isClicked,)),//Get.to(QuizScreen()),
-                    child: Container(
-                      width: double.infinity,
-                      alignment: Alignment.center,
-                      padding: EdgeInsets.all(kDefaultPadding * 0.75), // 15
-                      decoration: BoxDecoration(
-                        gradient: kPrimaryGradient,
-                        borderRadius: BorderRadius.all(Radius.circular(12)),
-                      ),
-                      child: Text(
-                        "Practice Test",
-                        style:TextStyle(fontSize: 22,fontWeight: FontWeight.bold,color: isClicked ? Colors.blueGrey : Colors.white, ),
-                        /*Theme.of(context)
-                            .textTheme
-                            .button
-                            ?.copyWith(color: isClicked ? Colors.teal : Colors.white),*/
-                      ),
-                    ),
-                  ),
-                  // Spacer(), // 1/6
-                  SizedBox(height: 20,),
-                  /*InkWell(
-                    onTap: () => Get.to(() => RealTest(isClicked: isClicked,),),//Get.to(RealTest()),//Get.to(QuizScreen()),
-                    child: Container(
-                      width: double.infinity,
-                      alignment: Alignment.center,
-                      padding: EdgeInsets.all(kDefaultPadding * 0.75), // 15
-                      decoration: BoxDecoration(
-                        gradient: kPrimaryGradient,
-                        borderRadius: BorderRadius.all(Radius.circular(12)),
-                      ),
-                      child: Text(
-                        "Real Test",
-                        style: TextStyle(fontSize: 22,fontWeight: FontWeight.bold,color: isClicked ? Colors.blueGrey : Colors.white, ),
-                      ),
-                    ),
-                  ),*/
-                  Spacer(flex: 2), // it will take 2/6 spaces
-
                 ],
               ),
+            ],
+          ),
+          body: Stack(
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: kDefaultPadding),
+                child: Column(
+                  //crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Spacer(flex: 2), //2/6
+                    SizedBox(height: 5,),
+                     ElevatedButton(
+                       style: ElevatedButton.styleFrom(
+                         backgroundColor: isDark ? nightCol : Colors.white ,
+                         shape: RoundedRectangleBorder(
+                           borderRadius: BorderRadius.only(bottomLeft: Radius.circular(0),bottomRight:Radius.circular(0),topLeft:Radius.circular(25),topRight: Radius.circular(25),),
+                           side: BorderSide(color: isClicked ? Colors.tealAccent : Colors.teal,),
+                         ),
+                       ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          GradientText(
+                            "K53 Test",
+                            style: TextStyle(fontSize: 40,fontWeight: FontWeight.bold,fontStyle: isClicked ? FontStyle.italic : FontStyle.normal),
+                            gradient: isClicked ? LinearGradient(colors: [
+                              Colors.cyanAccent,
+                              Colors.yellowAccent,
+                              Colors.deepOrange,
+
+                            ])
+                                :LinearGradient(colors: [
+                              Colors.deepOrange,
+                              Colors.orange,
+                              Colors.teal,
+                            ]) ,
+                          ),
+                        ],
+                      ),
+                       onPressed: (){
+                         Navigator.push(context, MaterialPageRoute(builder: (BuildContext _)=>Second()));
+                       },
+                    ),
+                    Spacer(), // 1/6
+                    Image.asset(
+                      'funny/blue.jpg',
+                      fit: BoxFit.cover,
+                    ),
+                    //Spacer(),
+                    SizedBox(height: 20,),
+                    ElevatedButton(
+                      //color: Colors.orange,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: isDark ? nightCol : Colors.white ,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.only(bottomLeft: Radius.circular(30),bottomRight:Radius.circular(30),topLeft:Radius.circular(30),topRight: Radius.circular(30),),
+                          side: BorderSide(color: Colors.orange,),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          GradientText(
+                            "Learn",
+                            style: TextStyle(fontSize: 40,fontWeight: FontWeight.bold,fontStyle: isClicked ? FontStyle.italic : FontStyle.normal),
+                            gradient: isClicked ? LinearGradient(colors: [
+                              Colors.cyanAccent,
+                              Colors.yellowAccent,
+                              Colors.deepOrange,
+
+                            ])
+                                :LinearGradient(colors: [
+                              Colors.deepOrange,
+                              Colors.orange,
+                              Colors.teal,
+                            ]) ,
+                          ),
+                        ],
+                      ),
+                      onPressed: (){
+                        if(_isAdLoaded){
+                          _interstitialAd.show();
+                        }
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) =>  LearnHome(isClicked:isClicked),),
+                        );
+                      },
+                    ),
+                    SizedBox(height: 10,),
+                    InkWell(
+                      onTap: () {
+                     if(_isAdLoaded){
+                          _interstitialAd.show();
+                        }
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => PracticeTest(isClicked: isClicked,),),
+                        );
+                      },
+                      child: Container(
+                        width: double.infinity,
+                        alignment: Alignment.center,
+                        padding: EdgeInsets.all(kDefaultPadding * 0.75), // 15
+                        decoration: BoxDecoration(
+                          gradient: kPrimaryGradient,
+                          borderRadius: BorderRadius.only(bottomLeft: Radius.circular(30),bottomRight:Radius.circular(0),topLeft:Radius.circular(30),topRight: Radius.circular(30),
+                          ),
+                        ),
+                        child: Text(
+                          "Practice Test",
+                          style:TextStyle(fontSize: 22,fontWeight: FontWeight.bold,color: isClicked ? nightCol : Colors.white, ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 10,),
+                    // InkWell(
+                    //   onTap: () {
+                    //     if(_isAdLoaded){
+                    //       _interstitialAd.show();
+                    //     }//
+                    //     Navigator.push(context, MaterialPageRoute(builder: (BuildContext _)=>MyTestQuiz()));
+                    //   },
+                    //   child: Container(
+                    //     width: double.infinity,
+                    //     alignment: Alignment.center,
+                    //     padding: EdgeInsets.all(kDefaultPadding * 0.75), // 15
+                    //     decoration: BoxDecoration(
+                    //       gradient: kPrimaryGradient,
+                    //       borderRadius: BorderRadius.only(bottomLeft: Radius.circular(30),bottomRight:Radius.circular(0),topLeft:Radius.circular(30),topRight: Radius.circular(30),
+                    //       ),
+                    //     ),
+                    //     child: Text(
+                    //       "Old Test",
+                    //       style:TextStyle(fontSize: 22,fontWeight: FontWeight.bold,color: isClicked ? nightCol : Colors.white, ),
+                    //     ),
+                    //   ),
+                    // ),
+                    SizedBox(height: 20,),
+                    Spacer(flex: 2), // it will take 2/6 spaces
+
+                  ],
+                ),
+              ),
+            ],
+          ),
+          floatingActionButton: GestureDetector(
+            child: Container(
+              width: 60,
+              height: 60,
+              padding: EdgeInsets.all(5),
+              margin: EdgeInsets.all(5),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.all(Radius.circular(30)),
+                //border: Border.all(color: Colors.tealAccent),
+                //color: isDark ? nightCol  : Colors.white,
+                gradient: LinearGradient(
+                  colors: [Colors.orange,Colors.black,],
+                ),
+              ),
+              child: Center(
+                child: Icon(Icons.share,color: Colors.tealAccent,),
+              ),
             ),
-          ],
+            onTap: ()async{
+              await Share.share("https://play.google.com/store/apps/details?id=com.k53_all_testss",);
+            },
+          ),
         ),
       ),
     );

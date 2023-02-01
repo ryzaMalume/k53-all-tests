@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.k53_all_tests">
    <application
-        android:label="k53_all_tests"
+        android:label="K53-App"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

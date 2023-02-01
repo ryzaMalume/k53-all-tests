@@ -6,7 +6,7 @@ const kRedColor = Color(0xFFE92E30);
 const kGrayColor = Colors.blueGrey;//Color(0xFFC1C1C1);
 const kBlackColor = Color(0xFF101010);
 const kPrimaryGradient = LinearGradient(
-  colors: [Colors.orange, Colors.deepOrange],
+  colors:[Colors.deepOrange,Colors.orange,Colors.tealAccent,], //[Colors.orange, Colors.deepOrange],
   begin: Alignment.centerLeft,
   end: Alignment.centerRight,
 );

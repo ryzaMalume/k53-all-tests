@@ -6,21 +6,25 @@ import 'package:k53_all_tests/basic/questions.dart';
 class OptionWidget extends StatefulWidget {
   final Question question;
   bool fuck;
+  final bool pop;
   final ValueChanged<Option> onClickedOption;
   final bool isClicked,sound;
-  OptionWidget({Key? key, required this.question, required this.onClickedOption,required this.isClicked,required this.fuck,required this.sound}) : super(key: key);
+  //final bool reset;
+  OptionWidget({required this.question, required this.onClickedOption,required this.isClicked,required this.fuck,required this.sound,required this.pop});
   static bool pressed = false;
 
   @override
-  State<OptionWidget> createState() => _OptionWidgetState(question: question,onClickedOption: onClickedOption,isClicked: isClicked,fuck:fuck,sound:sound );
+  State<OptionWidget> createState() => _OptionWidgetState(question: question,onClickedOption: onClickedOption,isClicked: isClicked,fuck:fuck,sound:sound,pop:pop);
 }
 
 class _OptionWidgetState extends State<OptionWidget> {
   final Question question;
   bool fuck;
+  final bool pop;
   final ValueChanged<Option> onClickedOption;
   final bool isClicked,sound;
-  _OptionWidgetState({required this.question, required this.onClickedOption,required this.isClicked,required this.fuck,required this.sound});
+  //final bool reset;
+  _OptionWidgetState({required this.question, required this.onClickedOption,required this.isClicked,required this.fuck,required this.sound,required this.pop});
   static bool pressed = false;
   late AudioPlayer player;
   @override
@@ -33,39 +37,41 @@ class _OptionWidgetState extends State<OptionWidget> {
     player.dispose();
     super.dispose();
   }
-
+  bool change=false;
+  void reset(){
+    //question.selectedOption=false;
+    change = false;
+  }
   @override
   Widget build(BuildContext context) {
+    if(pop==true){
+      Navigator.pop(context);
+    }
+    change = question.isLocked;
     //pressed = fuck ? false : true;
     if(fuck == true){
       pressed = false;
     }
     return SingleChildScrollView(
-      child: Stack(
-        children: [
-          Container(
-            color: isClicked ? Colors.blueGrey : Colors.white,//***********************************************************-------------------here
-            child: Column(
-              children:
-              question.options.map((option) => buildOption(context, option)).toList(),//type- Widget
-            ),
-          ),
-         Positioned(
-             child: Column(
-               children: [
-
-               ],
-             ),
-           bottom: 50,
-         ),
-        ],
+      //key: key,
+      child: Container(
+        color: isClicked ? Colors.blueGrey : Colors.white,
+        child: Column(
+          children:
+          question.options.map((option) => buildOption(context, option)).toList(),//type- Widget
+        ),
       ),
     );
   }
+  //end of app here.......going downwards is just functions
 
   Widget buildOption(BuildContext context, Option option){
+    if(pop==true){
+      Navigator.pop(context);
+    }
     final color = getColorForOption(option, question);
     return GestureDetector(
+      //key: key,
       onTap: () {
         setState(() async {
           onClickedOption(option);
@@ -84,11 +90,9 @@ class _OptionWidgetState extends State<OptionWidget> {
           }//end here
         });
         //fuck = false;
+        reset();
       },
       child: Container(
-        //color: Colors.teal,
-        //height: 50,
-        //width: 500,
         padding: EdgeInsets.all(12),
         margin: EdgeInsets.symmetric(vertical: 8),
         decoration: BoxDecoration(
@@ -104,7 +108,7 @@ class _OptionWidgetState extends State<OptionWidget> {
                 child: Text(
                   option.text,
                   overflow: TextOverflow.ellipsis,
-                  maxLines: 2,
+                  maxLines: 4,
                   style: TextStyle(fontSize: 20,color: pressed ? color : Colors.black),
                 ),
               ),
@@ -115,15 +119,18 @@ class _OptionWidgetState extends State<OptionWidget> {
       ),
     );
   }
-  void changePressed(){//************************************************************
+  void changePressed(){
     setState(() {
       pressed = true;
       fuck = false;//for red and green text after pressing next
     });
   }
   Color getColorForOption(Option option, Question question){
+    if(pop==true){
+      Navigator.pop(context);
+    }
     final isSelected = option == question.selectedOption;
-    if(question.isLocked){
+    if(change){
       if(isSelected){
         return option.isCorrect ? Colors.green : Colors.red;
       }else if(option.isCorrect){
@@ -133,6 +140,9 @@ class _OptionWidgetState extends State<OptionWidget> {
     return Colors.grey.shade300;
   }
   Widget getIconForOption(Option option, Question question){
+    if(pop==true){
+      Navigator.pop(context);
+    }
     final isSelected = option == question.selectedOption;
     if(question.isLocked){
       if(isSelected){
@@ -143,15 +153,5 @@ class _OptionWidgetState extends State<OptionWidget> {
     }
     return SizedBox.shrink();
   }
-  String getSound(Option option, Question question){
-    final isSelected = option == question.selectedOption;
-    if(question.isLocked){
-      if(isSelected){
-        return option.isCorrect ? 'dB.mp3' : 'oasis.mp3';
-      }else if(option.isCorrect){
-        return 'dB.mp3';
-      }
-    }
-    return '';
-  }
+
 }
